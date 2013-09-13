@@ -13,6 +13,7 @@
 *.so
 *.so.*
 *.dylib
+*.db
 
 # Executables
 *.exe
@@ -23,3 +24,4 @@
 *.bmp
 *.tsp
 *.map
+*.png
