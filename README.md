@@ -1,4 +1,5 @@
 DrMario
 =======
+Dr. Mario clone for Uzebox Game System
 
-Dr. Mario clone for Uzebox
+![alt tag](http://ericconnerapps.com/Apps/DrMario.png)
