@@ -126,8 +126,8 @@ unsigned short speed = LOW;
 unsigned short music = FEVER;
 unsigned short auto_repeat_counter = 0;
 unsigned short drop_floater_timer = 0;
-bool MovePill(unsigned short player,unsigned short move_type);
-unsigned short CheckColorMatch(unsigned short tile1,unsigned short tile2);
+bool MovePill(unsigned short player, unsigned short move_type);
+unsigned short CheckColorMatch(unsigned short tile1, unsigned short tile2);
 
 void Game1();
 void Game2();
@@ -136,9 +136,9 @@ void NextPill(unsigned short player);
 void NewPill(unsigned short player);
 void LockPill(unsigned short player);
 void CheckMatching(unsigned short player);
-void SplitPill(unsigned short player,unsigned short x,unsigned short y);
+void SplitPill(unsigned short player, unsigned short x, unsigned short y);
 void DropFloaters(unsigned short player);
-void DropFilledSpace(unsigned short player,unsigned short x,unsigned short y);
+void DropFilledSpace(unsigned short player, unsigned short x, unsigned short y);
 void DissapearAnim(unsigned short player);
 void InitBottle(unsigned short player);
 void AnimateVirus();
@@ -147,31 +147,38 @@ int main() {
 	ClearVram();
 	SetTileTable(Main);
 	SetFontTilesIndex(0);
-	DrawMap2(0,0,Main_Title);
+	DrawMap2(0, 0, Main_Title);
 	
-	SetTile(8,20,HEART);
-	
-	difficulty_level[PLAYER1] = 1;
-	difficulty_level[PLAYER2] = 1;
+	SetTile(8, 20, HEART);
 	
 	score[PLAYER1] = 0;
 	score[PLAYER2] = 0;
 	
-	while(1) {
+	levelselect_level = 1;
+	
+	difficulty_level[PLAYER1] = 1;
+	difficulty_level[PLAYER2] = 1;
+	
+	speed = LOW;
+	music = FEVER;
+	
+	while (1) {
 		if (grab_input(PLAYER1) == MOVE_SELECT) {
 			if (!Two_Player) {
-				SetTile(8,20,BLANK);
-				SetTile(8,22,HEART);
+				SetTile(8, 20, BLANK);
+				SetTile(8, 22, HEART);
 				while(ReadJoypad(PLAYER1) != 0);
 			} else {
-				SetTile(8,20,HEART);
-				SetTile(8,22,BLANK);
+				SetTile(8, 20, HEART);
+				SetTile(8, 22, BLANK);
 				while(ReadJoypad(PLAYER1) != 0);
 			}
+			
 			Two_Player = !Two_Player;
 		}
+		
 		if (grab_input(PLAYER1) == MOVE_START) {
-			while(ReadJoypad(PLAYER1) != 0);
+			while (ReadJoypad(PLAYER1) != 0);
 			LevelSelect();
 		}
 	}
@@ -181,22 +188,22 @@ void Game1() {
 	ClearVram();
 	SetTileTable(Game);
 	SetFontTilesIndex(64);
-	DrawMap2(0,0,Game_Map_1);
-	PrintByte(27,17,difficulty_level[PLAYER1],false);
+	DrawMap2(0, 0, Game_Map_1);
+	PrintByte(27, 17, difficulty_level[PLAYER1], false);
 	
-	PrintInt(6,9,score[PLAYER1],true);
-	SetTile(7,9,80);
-	PrintInt(6,6,high_score,true);
-	SetTile(7,6,80);
+	PrintInt(6, 9, score[PLAYER1], true);
+	SetTile(7, 9, 80);
+	PrintInt(6, 6, high_score, true);
+	SetTile(7, 6, 80);
 	
 	if (speed == LOW) {
-		DrawMap2(25,20,LOW_Text);
+		DrawMap2(25, 20, LOW_Text);
 		gravity = 60;
 	} else if (speed == MED) {
-		DrawMap2(25,20,MED_Text);
+		DrawMap2(25, 20, MED_Text);
 		gravity = 40;
 	} else {
-		DrawMap2(26,20,HI_Text);
+		DrawMap2(26, 20, HI_Text);
 		gravity = 20;
 	}
 	
@@ -207,7 +214,7 @@ void Game1() {
 	NewPill(PLAYER1);
 	
 	i = 0;
-	while(1) {
+	while (1) {
 		if (GetVsyncFlag()) {
 			ClearVsyncFlag();
 			AnimateVirus();
@@ -221,51 +228,52 @@ void Game1() {
 			} else {
 				drop_floater_timer = 0;
 				if (bottle[PLAYER1].contains_floaters) {
-					if (!bottle[PLAYER1].dissapear_anim)
-					DropFloaters(PLAYER1);
+					if (!bottle[PLAYER1].dissapear_anim) {
+						DropFloaters(PLAYER1);
+					}
 				}
 			}
 			
 			if (i < gravity) {
 				if (bottle[PLAYER1].dissapear_anim) {		
 					DissapearAnim(PLAYER1);
-				} else if ((move_type = grab_input(PLAYER1))) {
-					MovePill(PLAYER1,move_type);
+				} else if (move_type = grab_input(PLAYER1)) {
+					MovePill(PLAYER1, move_type);
 				}
 				i++;
 			} else {
-				MovePill(PLAYER1,MOVE_DOWN);
+				MovePill(PLAYER1, MOVE_DOWN);
 				i = 0;
 			}
 			
-			PrintInt(6,9,score[PLAYER1],true);
+			PrintInt(6, 9, score[PLAYER1], true);
 			if (score[PLAYER1] > high_score) {
 				high_score = score[PLAYER1];
-				PrintInt(6,6,high_score,true);
+				PrintInt(6, 6, high_score, true);
 			}
 			
 			if (bottle[PLAYER1].virus_count == 0) {
 				for (x = 0; x < BOTTLE_WIDTH; x++) {
 					for (y = 0; y < BOTTLE_DEPTH; y++) {
 						bottle[PLAYER1].space[x][y] = 0;
-						SetTile(BOTTLE_FIRST_COLUMN + x,BOTTLE_FIRST_ROW + y,bottle[PLAYER1].space[x][y]);
+						SetTile(BOTTLE_FIRST_COLUMN + x, BOTTLE_FIRST_ROW + y, bottle[PLAYER1].space[x][y]);
 					}
 				}
 				while (1) {
-					if (PS_anim_counter < 100) {
+					if (PS_anim_counter < 2500) {
 						PS_anim_counter++;
-					} else if (PS_anim_counter == 100) {
+					} else if (PS_anim_counter >= 2500) {
 						PS_anim_counter = 0;
 						if (PS_Box == 1) {
-							DrawMap2(11,13,Press_Start_1);
+							DrawMap2(11, 13, Press_Start_1);
 							PS_Box = 2;
 						} else {
-							DrawMap2(11,13,Press_Start_2);
+							DrawMap2(11, 13, Press_Start_2);
 							PS_Box = 1;
 						}
 					}
 					if (grab_input(PLAYER1) == MOVE_START) {
-						while(ReadJoypad(PLAYER1) != 0);
+						while (ReadJoypad(PLAYER1) != 0);
 						difficulty_level[PLAYER1]++;
 						Game1();
 					}
@@ -279,12 +287,12 @@ void Game2() {
 	ClearVram();
 	SetTileTable(Game);
 	SetFontTilesIndex(59);
-	DrawMap2(0,0,Game_Map_1);
+	DrawMap2(0, 0, Game_Map_1);
 	
 	score[PLAYER1] = 0;
 	score[PLAYER2] = 0;
 	
-	while(1) {
+	while (1) {
 		if (grab_input(PLAYER1) == MOVE_START) {
 			while (ReadJoypad(PLAYER1) != 0);
 			break;
@@ -299,18 +307,26 @@ void LevelSelect() {
 	SetFontTilesIndex(0);
 	DrawMap2(0,0,Select_1);
 	
-	DrawMap2(4,6,VIRUS_LEVEL_SEL);
-	PrintByte(23,7,difficulty_level[PLAYER1],false);
-	SetTile(5+difficulty_level[PLAYER1],9,62);
-	difficulty_level[PLAYER1] = 1;
+	if (!Two_Player) {
+		DrawMap2(0,0,Select_1);
+	} else {
+		DrawMap2(0,0,Select_2);
+	}
 	
-	DrawMap2(4,12,SPEED_LEVEL);
-	SetTile(12,15,62);
+	DrawMap2(4, 6, VIRUS_LEVEL_SEL);
+	PrintByte(23, 7, difficulty_level[PLAYER1], false);
+	SetTile(5 + difficulty_level[PLAYER1], 9, 62);
+	if (Two_Player) {
+		SetTile(5 + difficulty_level[PLAYER2], 11, 63);
+	}
 	
-	DrawMap2(4,18,MUSIC_TYPE);
-	DrawMap2(7,21,MUSIC_FEVER_SEL);
-	DrawMap2(14,21,MUSIC_CHILL);
-	DrawMap2(21,21,MUSIC_OFF);
+	DrawMap2(4, 12, SPEED_LEVEL);
+	SetTile(12, 15, 62);
+	
+	DrawMap2(4, 18, MUSIC_TYPE);
+	DrawMap2(7, 21, MUSIC_FEVER_SEL);
+	DrawMap2(14, 21, MUSIC_CHILL);
+	DrawMap2(21, 21, MUSIC_OFF);
 	
 	while(1) {
 		seed++;
@@ -329,46 +345,75 @@ void LevelSelect() {
 				}
 				break;
 			case MOVE_START:
-				Game1();
+				if (!Two_Player) {
+					Game1();
+				} else {
+					main();
+				}
 				break;
 		}
 		
 		// Level Select
 		if (levelselect_level == 1) {
-			DrawMap2(4,6,VIRUS_LEVEL_SEL);
-			DrawMap2(4,12,SPEED_LEVEL);
-			DrawMap2(4,18,MUSIC_TYPE);
+			DrawMap2(4, 6, VIRUS_LEVEL_SEL);
+			DrawMap2(4, 12, SPEED_LEVEL);
+			DrawMap2(4, 18, MUSIC_TYPE);
+			
 			if ((grab_input(PLAYER1) == MOVE_RIGHT) && (difficulty_level[PLAYER1] < 20)) {
 				difficulty_level[PLAYER1]++;
-				PrintByte(23,7,difficulty_level[PLAYER1],false);
-				SetTile(4+difficulty_level[PLAYER1],9,0);
-				SetTile(5+difficulty_level[PLAYER1],9,62);
-				while (ReadJoypad(PLAYER1) != 0);
+				PrintByte(23, 7, difficulty_level[PLAYER1], false);
+				SetTile(4 + difficulty_level[PLAYER1], 9, 0);
+				SetTile(5 + difficulty_level[PLAYER1], 9, 62);
+				unsigned int count = 0;
+				
+				while (ReadJoypad(PLAYER1) != 0) {
+					count++;
+					if (count >= 15000 && (difficulty_level[PLAYER1] < 20)) {
+						count = 0;
+						difficulty_level[PLAYER1]++;
+						PrintByte(23, 7, difficulty_level[PLAYER1], false);
+						SetTile(4 + difficulty_level[PLAYER1], 9, 0);
+						SetTile(5 + difficulty_level[PLAYER1], 9, 62);
+					}
+				}
 			} else if ((grab_input(PLAYER1) == MOVE_LEFT) && (difficulty_level[PLAYER1] > 1)) {
 				difficulty_level[PLAYER1]--;
-				PrintByte(23,7,difficulty_level[PLAYER1],false);
-				SetTile(5+difficulty_level[PLAYER1],9,62);
-				SetTile(6+difficulty_level[PLAYER1],9,0);
-				while (ReadJoypad(PLAYER1) != 0);
+				PrintByte(23, 7, difficulty_level[PLAYER1], false);
+				SetTile(5 + difficulty_level[PLAYER1], 9, 62);
+				SetTile(6 + difficulty_level[PLAYER1], 9, 0);
+				unsigned int count = 0;
+				
+				while (ReadJoypad(PLAYER1) != 0) {
+					count++;
+					if (count >= 15000 && (difficulty_level[PLAYER1] > 1)) {
+						count = 0;
+						difficulty_level[PLAYER1]--;
+						PrintByte(23, 7, difficulty_level[PLAYER1], false);
+						SetTile(5 + difficulty_level[PLAYER1], 9, 62);
+						SetTile(6 + difficulty_level[PLAYER1], 9, 0);
+					}
+				}
 			}
 		// Speed Select
 		} else if (levelselect_level == 2) {
-			DrawMap2(4,6,VIRUS_LEVEL);
-			DrawMap2(4,12,SPEED_LEVEL_SEL);
-			DrawMap2(4,18,MUSIC_TYPE);
+			DrawMap2(4, 6, VIRUS_LEVEL);
+			DrawMap2(4, 12, SPEED_LEVEL_SEL);
+			DrawMap2(4, 18, MUSIC_TYPE);
+			
 			if (speed == LOW) {
-				SetTile(12,15,62);
-				SetTile(17,15,0);
-				SetTile(21,15,0);
+				SetTile(12, 15, 62);
+				SetTile(17, 15, 0);
+				SetTile(21, 15, 0);
 			} else if (speed == MED) {
-				SetTile(12,15,0);
-				SetTile(17,15,62);
-				SetTile(21,15,0);
+				SetTile(12, 15, 0);
+				SetTile(17, 15, 62);
+				SetTile(21, 15, 0);
 			} else if (speed == HI) {
-				SetTile(12,15,0);
-				SetTile(17,15,0);
-				SetTile(21,15,62);
+				SetTile(12, 15, 0);
+				SetTile(17, 15, 0);
+				SetTile(21, 15, 62);
 			}
+			
 			if ((grab_input(PLAYER1) == MOVE_RIGHT) && (speed < 3)) {
 				speed++;
 				while (ReadJoypad(PLAYER1) != 0);
@@ -378,22 +423,24 @@ void LevelSelect() {
 			}
 		// Music Select
 		} else if (levelselect_level == 3) {
-			DrawMap2(4,6,VIRUS_LEVEL);
-			DrawMap2(4,12,SPEED_LEVEL);
-			DrawMap2(4,18,MUSIC_TYPE_SEL);
+			DrawMap2(4, 6, VIRUS_LEVEL);
+			DrawMap2(4, 12, SPEED_LEVEL);
+			DrawMap2(4, 18, MUSIC_TYPE_SEL);
+			
 			if (music == FEVER) {
-				DrawMap2(7,21,MUSIC_FEVER_SEL);
-				DrawMap2(14,21,MUSIC_CHILL);
-				DrawMap2(21,21,MUSIC_OFF);
+				DrawMap2(7, 21, MUSIC_FEVER_SEL);
+				DrawMap2(14, 21, MUSIC_CHILL);
+				DrawMap2(21, 21, MUSIC_OFF);
 			} else if (music == CHILL) {
-				DrawMap2(7,21,MUSIC_FEVER);
-				DrawMap2(14,21,MUSIC_CHILL_SEL);
-				DrawMap2(21,21,MUSIC_OFF);
+				DrawMap2(7, 21, MUSIC_FEVER);
+				DrawMap2(14, 21, MUSIC_CHILL_SEL);
+				DrawMap2(21, 21, MUSIC_OFF);
 			} else if (music == OFF) {
-				DrawMap2(7,21,MUSIC_FEVER);
-				DrawMap2(14,21,MUSIC_CHILL);
-				DrawMap2(21,21,MUSIC_OFF_SEL);
+				DrawMap2(7, 21, MUSIC_FEVER);
+				DrawMap2(14, 21, MUSIC_CHILL);
+				DrawMap2(21, 21, MUSIC_OFF_SEL);
 			}
+			
 			if ((grab_input(PLAYER1) == MOVE_RIGHT) && (music < 3)) {
 				music++;
 				while (ReadJoypad(PLAYER1) != 0);
@@ -405,7 +452,7 @@ void LevelSelect() {
 	}
 }
 
-bool MovePill(unsigned short player,unsigned short move_type) {
+bool MovePill(unsigned short player, unsigned short move_type) {
 	bool moved = 0;
 
 	switch (move_type) {
@@ -444,7 +491,7 @@ bool MovePill(unsigned short player,unsigned short move_type) {
 			break;
 
 		case MOVE_LEFT:
-			if ((current_pill[player].bottle_x == 0)) {
+			if (current_pill[player].bottle_x == 0) {
 				break;
 			}
 
@@ -569,11 +616,32 @@ void NextPill(unsigned short player) {
 	next_pill[player].x = 22;
 	next_pill[player].y = 7;
 
-	SetTile(next_pill[player].x,next_pill[player].y,next_pill[player].left);
-	SetTile(next_pill[player].x+1,next_pill[player].y,next_pill[player].right);
+	SetTile(next_pill[player].x, next_pill[player].y, next_pill[player].left);
+	SetTile(next_pill[player].x + 1, next_pill[player].y, next_pill[player].right);
 }
 
 void NewPill(unsigned short player) {
+	if ((bottle[player].space[3][0] != 0) || (bottle[player].space[4][0] != 0)) {
+		while (1) {
+			if (PS_anim_counter < 2500) {
+				PS_anim_counter++;
+			} else if (PS_anim_counter >= 2500) {
+				PS_anim_counter = 0;
+				if (PS_Box == 1) {
+					DrawMap2(11, 13, Game_Over_1);
+					PS_Box = 2;
+				} else {
+					DrawMap2(11, 13, Game_Over_2);
+					PS_Box = 1;
+				}
+			}
+			if (grab_input(PLAYER1) == MOVE_START) {
+				while (ReadJoypad(PLAYER1) != 0);
+				main();
+			}
+		}
+	}
+	
 	current_pill[player].x = 14;
 	current_pill[player].y = BOTTLE_FIRST_ROW;
 	current_pill[player].bottle_x = 3;
@@ -583,8 +651,8 @@ void NewPill(unsigned short player) {
 	current_pill[player].left = next_pill[player].left;
 	current_pill[player].right = next_pill[player].right;
 	
-	SetTile(current_pill[player].x,current_pill[player].y,current_pill[player].left);
-	SetTile(current_pill[player].x+1,current_pill[player].y,current_pill[player].right);
+	SetTile(current_pill[player].x, current_pill[player].y, current_pill[player].left);
+	SetTile(current_pill[player].x + 1, current_pill[player].y, current_pill[player].right);
 	
 	NextPill(player);
 }
@@ -615,7 +683,7 @@ void CheckMatching(unsigned short player) {
 				for (j = 0; j < BOTTLE_DEPTH; j++) {
 					if (y + j + 1 > BOTTLE_DEPTH)
 					break;
-					if (CheckColorMatch (bottle[player].space[x][y+j],bottle[player].space[x][y+j+1])) {
+					if (CheckColorMatch(bottle[player].space[x][y + j], bottle[player].space[x][y + j + 1])) {
 						matching_spaces++;
 					} else {
 						if (matching_spaces >= 4) {
@@ -682,7 +750,7 @@ void CheckMatching(unsigned short player) {
 	}
 }
 
-void SplitPill(unsigned short player,unsigned short x,unsigned short y) {
+void SplitPill(unsigned short player, unsigned short x, unsigned short y) {
 	unsigned short first_column;
 	first_column=BOTTLE_FIRST_COLUMN;
 	bottle[player].check_for_sequences = 0;
@@ -764,7 +832,7 @@ void SplitPill(unsigned short player,unsigned short x,unsigned short y) {
 	}
 }
 
-unsigned short CheckColorMatch(unsigned short tile1,unsigned short tile2) {
+unsigned short CheckColorMatch(unsigned short tile1, unsigned short tile2) {
 	switch (tile1) {
 		case LEFT_BLUE ... RIGHT_BLUE:
 		case BOTTOM_BLUE ... TOP_BLUE:
@@ -848,7 +916,7 @@ void DropFloaters(unsigned short player) {
 	}
 }
 
-void DropFilledSpace(unsigned short player,unsigned short x,unsigned short y) {
+void DropFilledSpace(unsigned short player, unsigned short x, unsigned short y) {
 	unsigned short first_column;
 	first_column=BOTTLE_FIRST_COLUMN;
 	bottle[player].space[x][y+1]=bottle[player].space[x][y];
@@ -898,7 +966,7 @@ void InitBottle(unsigned short player) {
 		if (!bottle[player].space[x][y]) {
 			bottle[player].space[x][y] = VIRUS_BLUE_1 + (rand() % 5);
 			bottle[player].virus_count++;
-			SetTile(BOTTLE_FIRST_COLUMN + x,BOTTLE_FIRST_ROW + y,bottle[player].space[x][y]);
+			SetTile(BOTTLE_FIRST_COLUMN + x, BOTTLE_FIRST_ROW + y, bottle[player].space[x][y]);
 		}
 	}
 }
@@ -945,7 +1013,7 @@ unsigned short grab_input(unsigned short player) {
 	auto_repeat_counter = 0;
 	
 	if (c&BTN_A && holdKey[player] == false) {		
-		holdKey[player]=true;
+		holdKey[player] = true;
 		return MOVE_SPIN;
 	} else if (c&BTN_RIGHT) {
 		return MOVE_RIGHT;
